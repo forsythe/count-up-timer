@@ -13,11 +13,10 @@ long msResetByButton; //time that needs to be deleted between launch and button 
 long timestampToSave = -1;
 
 ThickArc secArc, minArc, hrArc, dayArc;
-//how many ms it takes to complete each arc/2PI
-float secConstArc = 1000/(2*PI);
-float minConstArc = secConstArc*60;
-float hrConstArc = minConstArc*60;
-float dayConstArc = hrConstArc*24;
+int msPerSec = 1000; 
+int msPerMin = msPerSec*60;
+int msPerHr = msPerMin*60;
+int msPerDay = msPerHr*24;
 
 PFont font; 
 PrintWriter output;
@@ -64,7 +63,7 @@ void setup() {
       msBetweenResetAndNow = (new Date()).getTime() - Long.parseLong(lastKnownResetS);
     }
   } else {
-    println("file not found.");
+    println("file not found. assuming reset now");
     lastKnownResetS = ""+(new Date()).getTime();
     msBetweenResetAndNow = 0;
   }
@@ -73,28 +72,25 @@ void setup() {
   println("ms since last known reset before launch: " + msBetweenResetAndNow);
 }
 
-Date d = new Date();
 void draw() {
   clear();
   background(bgGrey);
-  noSmooth();
 
-  println(d.getTime());
   totalMS = millis() + msBetweenResetAndNow - msResetByButton;
 
-  sec = (int)((totalMS/1000L)%60L);
-  min = (int)((totalMS/60000L)%60L);
-  hr  = (int)((totalMS/3600000L)%24L);
-  day = (int)((totalMS/86400000L)%365L);
+  sec = (int)((totalMS/msPerSec)%60L);
+  min = (int)((totalMS/msPerMin)%60L);
+  hr  = (int)((totalMS/msPerHr)%24L);
+  day = (int)((totalMS/msPerDay)%365L);
 
   fill(white);
   text(nf(day, 3)+" : " + nf(hr, 2)+" : "+nf(min, 2)+" : "+nf(sec, 2) + "\n"
     + "day   hr  min  sec", width/2, height-27);
 
-  dayArc.update(totalMS/dayConstArc);
-  hrArc.update(totalMS/hrConstArc);
-  minArc.update(totalMS/minConstArc);
-  secArc.update(totalMS/secConstArc);
+  dayArc.update(totalMS, msPerDay);
+  hrArc.update(totalMS, msPerHr);
+  minArc.update(totalMS, msPerMin);
+  secArc.update(totalMS, msPerSec);
 
   if (overCircle(width/2, height/2, 50)) {
     if (mousePressed) {
@@ -139,7 +135,6 @@ class ThickArc {
   int littleR, bigR;
   int x = width/2;
   int y = height/2;
-  float angle;
   color c, d;
 
   ThickArc(int littleR_rhs, int bigR_rhs, color c_rhs, color d_rhs) {
@@ -149,14 +144,17 @@ class ThickArc {
     d = d_rhs;
   }
 
-  void update(float angle) {
-    angle %= 4*PI;
+  void update(long angle, long thresh) { //actually angle multiple of pi
+    angle %= 2*thresh;
+    //println(angle);
 
     fill(d); //base ring color
     ellipse(x, y, 2*bigR, 2*bigR);
 
     fill(c); //active ring color
-    arc(x, y, 2*bigR, 2*bigR, max(-PI/2, angle-5*PI/2), min(-PI/2+angle, 3*PI/2));
+    float proportion = (angle/(float)thresh);
+
+    arc(x, y, 2*bigR, 2*bigR, PI*max(-0.5, 2*proportion-2.5), PI*min(-0.5+2*proportion, 1.5));
 
     fill(bgGrey); //bg color center
     ellipse(x, y, 2*littleR, 2*littleR);
