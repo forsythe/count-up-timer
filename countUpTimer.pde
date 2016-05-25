@@ -1,9 +1,9 @@
 color bgGrey = color(167);
 color white = color(255);
-color black = color(0);
+color black = color(70);
 
 int sec, min, hr, day;
-int offset = 0;//1000*60*43; //ms
+long offset = 0;//86_390_000; //ms
 
 ThickArc secArc, minArc, hrArc, dayArc;
 //how many ms it takes to complete each arc/2PI
@@ -36,14 +36,14 @@ void draw() {
   clear();
   background(bgGrey);
 
-  sec = ((millis()+offset)/1000)%60;
-  min = (min/60)%60;
-  hr = (hr/60)%60;
-  day = (hr/24)%365;
+  sec = int((((long)millis()+offset)/1000L)%60L);
+  min = int((((long)millis()+offset)/1000L/60L)%60L);
+  hr = int((((long)millis()+offset)/1000L/3600L)%24L);
+  day = int((((long)millis()+offset)/1000L/3600L/24L)%365L);
 
   fill(white);
   text(nf(day, 3)+" : " + nf(hr, 2)+" : "+nf(min, 2)+" : "+nf(sec, 2) + "\n"
-    + "day   hr  min  sec", width/2, height-25);
+    + "day   hr  min  sec", width/2, height-27);
 
   dayArc.update((millis()+offset)/dayConstArc, day%2==0);
   hrArc.update((millis()+offset)/hrConstArc, hr%2==0);
