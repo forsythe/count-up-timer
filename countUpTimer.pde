@@ -73,6 +73,7 @@ Date d = new Date();
 void draw() {
   clear();
   background(bgGrey);
+  noSmooth();
 
   println(d.getTime());
   totalMS = millis() + msBetweenResetAndNow - msResetByButton;
@@ -151,7 +152,7 @@ class ThickArc {
     ellipse(x, y, 2*bigR, 2*bigR);
 
     fill(c); //active ring color
-    arc(x, y, 2*bigR, 2*bigR, max(-PI/2, angle-2*PI-PI/2), min(-PI/2+angle, 3*PI/2));
+    arc(x, y, 2*bigR, 2*bigR, max(-PI/2, angle-5*PI/2), min(-PI/2+angle, 3*PI/2));
 
     fill(bgGrey); //bg color center
     ellipse(x, y, 2*littleR, 2*littleR);
