@@ -1,6 +1,8 @@
+import java.util.Date;
+
 color bgGrey = color(167);
 color white = color(255);
-color black = color(70);
+color black = color(40);
 
 int sec, min, hr, day;
 long offset = 0;//86_390_000; //ms
@@ -13,6 +15,7 @@ float hrConstArc = minConstArc*60;
 float dayConstArc = hrConstArc*24;
 
 PFont font; 
+PrintWriter output;
 
 void setup() {
   size(500, 500);
@@ -30,11 +33,14 @@ void setup() {
   textLeading(20);
 
   frameRate(120);
+
+  output = createWriter("savedTime.txt");
 }
 
 void draw() {
   clear();
   background(bgGrey);
+
 
   sec = int((((long)millis()+offset)/1000L)%60L);
   min = int((((long)millis()+offset)/1000L/60L)%60L);
@@ -45,21 +51,32 @@ void draw() {
   text(nf(day, 3)+" : " + nf(hr, 2)+" : "+nf(min, 2)+" : "+nf(sec, 2) + "\n"
     + "day   hr  min  sec", width/2, height-27);
 
-  dayArc.update((millis()+offset)/dayConstArc, day%2==0);
-  hrArc.update((millis()+offset)/hrConstArc, hr%2==0);
-  minArc.update((millis()+offset)/minConstArc, min%2==0);
-  secArc.update((millis()+offset)/secConstArc, sec%2==0);
+  dayArc.update((millis()+offset)/dayConstArc);
+  hrArc.update((millis()+offset)/hrConstArc);
+  minArc.update((millis()+offset)/minConstArc);
+  secArc.update((millis()+offset)/secConstArc);
+
+  saveTime();
+}
+
+void saveTime() {
+  println("called" + random(2));
+  Date d = new Date();
+  long ms = d.getTime();
+  output.println(ms);
+}
+
+void stop() {
+  output.flush();
+  output.close();
 }
 
 class ThickArc {
   int littleR, bigR;
   int x = width/2;
   int y = height/2;
-
   float angle;
-  color c;
-  color d;
-
+  color c, d;
 
   ThickArc(int littleR_rhs, int bigR_rhs, color c_rhs, color d_rhs) {
     littleR = littleR_rhs;
@@ -68,7 +85,7 @@ class ThickArc {
     d = d_rhs;
   }
 
-  void update(float angle, boolean firstColor) {
+  void update(float angle) {
     angle %= 4*PI;
 
     fill(d); //base ring color
