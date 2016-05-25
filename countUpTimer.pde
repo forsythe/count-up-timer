@@ -69,16 +69,18 @@ void setup() {
   println("ms since last known reset before launch: " + msBetweenResetAndNow);
 }
 
+Date d = new Date();
 void draw() {
   clear();
   background(bgGrey);
 
+  println(d.getTime());
   totalMS = millis() + msBetweenResetAndNow - msResetByButton;
 
-  sec = (int)(((totalMS)/1000L)%60L);
-  min = (int)((totalMS)/60000L)%60L);
-  hr = (int)((totalMS)/3600000L)%24L);
-  day = (int)((totalMS)/86400000L)%365L);
+  sec = (int)((totalMS/1000L)%60L);
+  min = (int)((totalMS/60000L)%60L);
+  hr  = (int)((totalMS/3600000L)%24L);
+  day = (int)((totalMS/86400000L)%365L);
 
   fill(white);
   text(nf(day, 3)+" : " + nf(hr, 2)+" : "+nf(min, 2)+" : "+nf(sec, 2) + "\n"
