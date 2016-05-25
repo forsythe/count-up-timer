@@ -3,9 +3,14 @@ import java.util.Date;
 color bgGrey = color(167);
 color white = color(255);
 color black = color(40);
+color darkRed = color(200, 0, 0);
+color lightRed = color(255, 0, 0);
 
 int sec, min, hr, day;
-long offset = 0;//86_390_000; //ms
+long totalMS; //total time being tracked
+long msBetweenResetAndNow; //time between last reset and now
+long msResetByButton; //time that needs to be deleted between launch and button press
+long timestampToSave = -1;
 
 ThickArc secArc, minArc, hrArc, dayArc;
 //how many ms it takes to complete each arc/2PI
@@ -16,59 +21,111 @@ float dayConstArc = hrConstArc*24;
 
 PFont font; 
 PrintWriter output;
+BufferedReader reader;
+File f;
 
 void setup() {
   size(500, 500);
   background(bgGrey);
   stroke(bgGrey);
 
-  dayArc = new ThickArc(340, 390, white, black);
-  hrArc = new ThickArc(260, 310, white, black);  
-  minArc = new ThickArc(180, 230, white, black);
-  secArc = new ThickArc(100, 150, white, black);
+  dayArc = new ThickArc(170, 195, white, black);
+  hrArc = new ThickArc(130, 160, white, black);  
+  minArc = new ThickArc(90, 115, white, black);
+  secArc = new ThickArc(50, 75, white, black);
 
   font = createFont("Courier New", 23, true);
   textFont(font);
   textAlign(CENTER);
   textLeading(20);
 
-  frameRate(120);
+  f = new File(dataPath("..\\savedTime.txt"));
+  String lastKnownResetS = "";
 
-  output = createWriter("savedTime.txt");
+  if (f.exists()) {
+    reader = createReader("..\\savedTime.txt");  
+
+    try {
+      lastKnownResetS = reader.readLine();
+    } 
+    catch (IOException e) {
+      e.printStackTrace();
+      lastKnownResetS = null;
+    }
+
+    if (lastKnownResetS == null) {
+      lastKnownResetS = ""+(new Date()).getTime();
+      msBetweenResetAndNow = 0;
+    } else {
+      msBetweenResetAndNow = (new Date()).getTime() - Long.parseLong(lastKnownResetS);
+    }
+  } else {
+    println("file not found.");
+    lastKnownResetS = ""+(new Date()).getTime();
+    msBetweenResetAndNow = 0;
+  }
+
+  println("last known reset timestamp: " + lastKnownResetS);
+  println("ms since last known reset before launch: " + msBetweenResetAndNow);
 }
 
 void draw() {
   clear();
   background(bgGrey);
 
+  totalMS = millis() + msBetweenResetAndNow - msResetByButton;
 
-  sec = int((((long)millis()+offset)/1000L)%60L);
-  min = int((((long)millis()+offset)/1000L/60L)%60L);
-  hr = int((((long)millis()+offset)/1000L/3600L)%24L);
-  day = int((((long)millis()+offset)/1000L/3600L/24L)%365L);
+  sec = int(((totalMS)/1000L)%60L);
+  min = int(((totalMS)/1000L/60L)%60L);
+  hr = int(((totalMS)/1000L/3600L)%24L);
+  day = int(((totalMS)/1000L/3600L/24L)%365L);
 
   fill(white);
   text(nf(day, 3)+" : " + nf(hr, 2)+" : "+nf(min, 2)+" : "+nf(sec, 2) + "\n"
     + "day   hr  min  sec", width/2, height-27);
 
-  dayArc.update((millis()+offset)/dayConstArc);
-  hrArc.update((millis()+offset)/hrConstArc);
-  minArc.update((millis()+offset)/minConstArc);
-  secArc.update((millis()+offset)/secConstArc);
+  dayArc.update(totalMS/dayConstArc);
+  hrArc.update(totalMS/hrConstArc);
+  minArc.update(totalMS/minConstArc);
+  secArc.update(totalMS/secConstArc);
 
-  saveTime();
+  if (overCircle(width/2, height/2, 50)) {
+
+    if (mousePressed) {
+      fill(darkRed);
+      resetTime();
+      msResetByButton = millis();
+    } else {
+      fill(lightRed);
+    }
+    ellipse(width/2, height/2, 100, 100);
+  }
 }
 
-void saveTime() {
-  println("called" + random(2));
-  Date d = new Date();
-  long ms = d.getTime();
-  output.println(ms);
+boolean overCircle(int x, int y, int radius) {
+  return sqrt(sq(x-mouseX) + sq(y-mouseY)) < radius;
 }
 
-void stop() {
-  output.flush();
-  output.close();
+void resetTime() {
+  timestampToSave = (new Date()).getTime();
+  println("timestamp to be saved: " + timestampToSave);
+  msBetweenResetAndNow = 0;
+}
+
+void exit() {
+  if (!f.exists()) {
+    timestampToSave = (new Date()).getTime();
+  }
+
+  if (timestampToSave!=-1) {
+    output = createWriter("savedTime.txt"); //must come after reading
+    output.println(timestampToSave);
+    output.flush();
+    output.close();
+    println("saved following timestamp to file: " + timestampToSave);
+  }
+
+  super.exit();
 }
 
 class ThickArc {
@@ -89,12 +146,12 @@ class ThickArc {
     angle %= 4*PI;
 
     fill(d); //base ring color
-    ellipse(x, y, bigR, bigR);
+    ellipse(x, y, 2*bigR, 2*bigR);
 
     fill(c); //active ring color
-    arc(x, y, bigR, bigR, max(-PI/2, angle-2*PI-PI/2), min(-PI/2+angle, 3*PI/2));
+    arc(x, y, 2*bigR, 2*bigR, max(-PI/2, angle-2*PI-PI/2), min(-PI/2+angle, 3*PI/2));
 
     fill(bgGrey); //bg color center
-    ellipse(x, y, littleR, littleR);
+    ellipse(x, y, 2*littleR, 2*littleR);
   }
 }
