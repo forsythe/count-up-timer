@@ -24,6 +24,8 @@ PrintWriter output;
 BufferedReader reader;
 File f;
 
+PImage resetIcon;
+
 void setup() {
   size(500, 500);
   background(bgGrey);
@@ -38,6 +40,8 @@ void setup() {
   textFont(font);
   textAlign(CENTER);
   textLeading(20);
+
+  resetIcon = loadImage("resetIcon.png");
 
   f = new File(dataPath("..\\savedTime.txt"));
   String lastKnownResetS = "";
@@ -93,7 +97,6 @@ void draw() {
   secArc.update(totalMS/secConstArc);
 
   if (overCircle(width/2, height/2, 50)) {
-
     if (mousePressed) {
       fill(darkRed);
       resetTime();
@@ -102,6 +105,7 @@ void draw() {
       fill(lightRed);
     }
     ellipse(width/2, height/2, 100, 100);
+    image(resetIcon, width/2-40, height/2-40, 80, 80);
   }
 }
 
