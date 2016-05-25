@@ -30,7 +30,7 @@ void setup() {
   stroke(bgGrey);
 
   dayArc = new ThickArc(170, 195, white, black);
-  hrArc = new ThickArc(130, 160, white, black);  
+  hrArc = new ThickArc(130, 155, white, black);  
   minArc = new ThickArc(90, 115, white, black);
   secArc = new ThickArc(50, 75, white, black);
 
@@ -75,10 +75,10 @@ void draw() {
 
   totalMS = millis() + msBetweenResetAndNow - msResetByButton;
 
-  sec = int(((totalMS)/1000L)%60L);
-  min = int(((totalMS)/1000L/60L)%60L);
-  hr = int(((totalMS)/1000L/3600L)%24L);
-  day = int(((totalMS)/1000L/3600L/24L)%365L);
+  sec = (int)(((totalMS)/1000L)%60L);
+  min = (int)((totalMS)/60000L)%60L);
+  hr = (int)((totalMS)/3600000L)%24L);
+  day = (int)((totalMS)/86400000L)%365L);
 
   fill(white);
   text(nf(day, 3)+" : " + nf(hr, 2)+" : "+nf(min, 2)+" : "+nf(sec, 2) + "\n"
