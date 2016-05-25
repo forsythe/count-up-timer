@@ -3,8 +3,8 @@ import java.util.Date;
 color bgGrey = color(167);
 color white = color(255);
 color black = color(40);
-color darkRed = color(200, 0, 0);
-color lightRed = color(255, 0, 0);
+color darkRed = color(184, 56, 59);
+color lightRed = color(220, 56, 59);
 
 int sec, min, hr, day;
 long totalMS; //total time being tracked
