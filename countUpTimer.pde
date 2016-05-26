@@ -81,7 +81,7 @@ void draw() {
   sec = (int)((totalMS/msPerSec)%60L);
   min = (int)((totalMS/msPerMin)%60L);
   hr  = (int)((totalMS/msPerHr)%24L);
-  day = (int)((totalMS/msPerDay));
+  day = (int)((totalMS/msPerDay)%365L);
 
   fill(white);
   text(nf(day, 3)+" : " + nf(hr, 2)+" : "+nf(min, 2)+" : "+nf(sec, 2) + "\n"
